@@ -1,16 +1,22 @@
+﻿import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import API from '../api/auth';
 import './Dashboard.css';
-
 export default function UserDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
+  const [quickProfile, setQuickProfile] = useState(null);
+  useEffect(() => {
+    API.get('/api/profile/me')
+      .then((res) => setQuickProfile(res.data))
+      .catch(() => setQuickProfile(null));
+  }, []);
   async function handleLogout() {
     await logout();
     navigate('/login', { replace: true });
   }
-
+  const roles = quickProfile?.roles ?? user?.roles ?? [];
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -19,9 +25,12 @@ export default function UserDashboard() {
           <span>MediCare</span>
         </div>
         <nav className="sidebar-nav">
-          <a className="nav-item active" href="/dashboard">
+          <Link className="nav-item active" to="/dashboard">
             <span className="nav-icon">&#x1F3E0;</span> Dashboard
-          </a>
+          </Link>
+          <Link className="nav-item" to="/profile">
+            <span className="nav-icon">&#x1F464;</span> Profile
+          </Link>
           <a className="nav-item" href="#">
             <span className="nav-icon">&#x1F4C5;</span> Appointments
           </a>
@@ -33,7 +42,6 @@ export default function UserDashboard() {
           &#x2190; Logout
         </button>
       </aside>
-
       <main className="main">
         <header className="page-header">
           <div>
@@ -44,7 +52,6 @@ export default function UserDashboard() {
             &#x1F464; {user?.username}
           </div>
         </header>
-
         <div className="stats-grid">
           <div className="stat-card stat-card--purple">
             <div className="stat-info">
@@ -68,11 +75,10 @@ export default function UserDashboard() {
             <span className="stat-icon">&#x1F514;</span>
           </div>
         </div>
-
         <div className="info-card">
           <p className="info-label">Your Role</p>
           <div className="role-badges">
-            {user?.roles?.map((r) => (
+            {roles.map((r) => (
               <span key={r} className={`role-badge ${r === 'ROLE_ADMIN' ? 'role-badge--red' : 'role-badge--green'}`}>
                 {r === 'ROLE_ADMIN' ? '🛡 ADMINISTRATOR' : '✓ PATIENT / USER'}
               </span>

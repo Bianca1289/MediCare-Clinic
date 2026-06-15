@@ -1,27 +1,23 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import API from '../api/auth';
 import './Dashboard.css';
-
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [dashData, setDashData] = useState(null);
   const [loadingData, setLoadingData] = useState(true);
-
   useEffect(() => {
     API.get('/api/admin/dashboard')
       .then((res) => setDashData(res.data))
       .catch(() => setDashData(null))
       .finally(() => setLoadingData(false));
   }, []);
-
   async function handleLogout() {
     await logout();
     navigate('/login', { replace: true });
   }
-
   return (
     <div className="layout">
       <aside className="sidebar">
@@ -30,9 +26,12 @@ export default function AdminDashboard() {
           <span>MediCare</span>
         </div>
         <nav className="sidebar-nav">
-          <a className="nav-item active" href="/admin/dashboard">
+          <Link className="nav-item active" to="/admin/dashboard">
             <span className="nav-icon">&#x1F4CA;</span> Admin Dashboard
-          </a>
+          </Link>
+          <Link className="nav-item" to="/profile">
+            <span className="nav-icon">&#x1F464;</span> Profile
+          </Link>
           <a className="nav-item" href="#">
             <span className="nav-icon">&#x1F465;</span> Manage Users
           </a>
@@ -47,7 +46,6 @@ export default function AdminDashboard() {
           &#x2190; Logout
         </button>
       </aside>
-
       <main className="main">
         <header className="page-header">
           <div>
@@ -58,14 +56,11 @@ export default function AdminDashboard() {
             &#x1F6E1; {user?.username}
           </div>
         </header>
-
         <div className="stats-grid">
           <div className="stat-card stat-card--blue">
             <div className="stat-info">
               <p className="stat-label">Total Users</p>
-              <p className="stat-value">
-                {loadingData ? '…' : (dashData?.totalUsers ?? '—')}
-              </p>
+              <p className="stat-value">{loadingData ? '…' : (dashData?.totalUsers ?? '—')}</p>
             </div>
             <span className="stat-icon">&#x1F465;</span>
           </div>
@@ -84,12 +79,10 @@ export default function AdminDashboard() {
             <span className="stat-icon">&#x1F489;</span>
           </div>
         </div>
-
-        {/* Users table */}
         <div className="table-card">
           <h2 className="table-title">Registered Users</h2>
           {loadingData ? (
-            <p className="loading-text">Loading…</p>
+            <p className="loading-text">Loading...</p>
           ) : (
             <table className="data-table">
               <thead>
@@ -112,8 +105,8 @@ export default function AdminDashboard() {
                     </td>
                     <td>
                       {u.roles?.map((r) => (
-                        <span key={r.name} className="role-badge role-badge--small">
-                          {r.name}
+                        <span key={r} className="role-badge role-badge--small">
+                          {r}
                         </span>
                       ))}
                     </td>

@@ -2,20 +2,18 @@ package com.medicareclinic.backend.controller;
 
 import com.medicareclinic.backend.dto.CreatePatientRequest;
 import com.medicareclinic.backend.dto.PatientResponse;
+import com.medicareclinic.backend.dto.UpdatePatientRequest;
 import com.medicareclinic.backend.model.Patient;
 import com.medicareclinic.backend.service.PatientService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.validation.Valid;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/receptionist/patients")
@@ -28,20 +26,35 @@ public class ReceptionistPatientController {
     @PostMapping
     public ResponseEntity<PatientResponse> createPatient(@Valid @RequestBody CreatePatientRequest request) {
         Patient p = patientService.createPatient(request);
-        return ResponseEntity.ok(toResponse(p));
+        return ResponseEntity.status(HttpStatus.CREATED).body(patientService.toResponse(p));
     }
 
     @GetMapping
-    public ResponseEntity<List<PatientResponse>> listPatients() {
-        List<PatientResponse> list = patientService.getAllPatients().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(list);
+    public ResponseEntity<Page<PatientResponse>> listPatients(
+            @RequestParam(required = false) String search,
+            @PageableDefault(size = 10, sort = "fullName") Pageable pageable) {
+        if (search != null && !search.isBlank()) {
+            return ResponseEntity.ok(patientService.searchPatients(search, pageable));
+        }
+        return ResponseEntity.ok(patientService.getAllPatientsPaged(pageable));
     }
 
-    private PatientResponse toResponse(Patient p) {
-        String username = p.getUser() != null ? p.getUser().getUsername() : null;
-        return new PatientResponse(p.getId(), p.getFullName(), p.getContactInfo(), p.getEmail(), username);
+    @GetMapping("/{id}")
+    public ResponseEntity<PatientResponse> getPatient(@PathVariable Long id) {
+        Patient p = patientService.getById(id);
+        return ResponseEntity.ok(patientService.toResponse(p));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<PatientResponse> updatePatient(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdatePatientRequest request) {
+        return ResponseEntity.ok(patientService.updatePatient(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
+        patientService.deletePatient(id);
+        return ResponseEntity.noContent().build();
     }
 }
-

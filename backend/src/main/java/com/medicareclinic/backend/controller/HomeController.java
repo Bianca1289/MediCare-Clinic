@@ -1,7 +1,7 @@
 package com.medicareclinic.backend.controller;
 
-import com.medicareclinic.backend.model.User;
-import com.medicareclinic.backend.repository.UserRepository;
+import com.medicareclinic.backend.dto.ProfileResponse;
+import com.medicareclinic.backend.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,7 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class HomeController {
 
-    private final UserRepository userRepository;
+    private final ProfileService profileService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, String>> dashboard(Authentication authentication) {
@@ -30,7 +30,7 @@ public class HomeController {
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<User>> allUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+    public ResponseEntity<List<ProfileResponse>> allUsers() {
+        return ResponseEntity.ok(profileService.getAllProfiles());
     }
 }

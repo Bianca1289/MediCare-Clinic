@@ -58,8 +58,8 @@ public class AuthController {
                     .body(Map.of("error", "Username already taken"));
         }
 
-        Role userRole = roleRepository.findByName("ROLE_USER")
-                .orElseThrow(() -> new IllegalStateException("ROLE_USER not found — DataInitializer may not have run"));
+        Role userRole = roleRepository.findByName("ROLE_PATIENT")
+                .orElseThrow(() -> new IllegalStateException("ROLE_PATIENT not found — DataInitializer may not have run"));
 
         User user = new User();
         user.setUsername(request.username());
@@ -74,6 +74,6 @@ public class AuthController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(Map.of("username", user.getUsername(), "roles", List.of("ROLE_USER")));
+                .body(Map.of("username", user.getUsername(), "roles", List.of("ROLE_PATIENT")));
     }
 }

@@ -1,8 +1,10 @@
 package com.medicareclinic.backend.controller;
 
 import com.medicareclinic.backend.dto.RegisterRequest;
+import com.medicareclinic.backend.model.Patient;
 import com.medicareclinic.backend.model.Role;
 import com.medicareclinic.backend.model.User;
+import com.medicareclinic.backend.repository.PatientRepository;
 import com.medicareclinic.backend.repository.RoleRepository;
 import com.medicareclinic.backend.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -28,6 +30,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PatientRepository patientRepository;
 
     // Returns current user info, or 401 if not authenticated.
     // Endpoint is permitAll so unauthenticated calls reach here with authentication == null.
@@ -71,6 +74,12 @@ public class AuthController {
         user.getRoles().add(userRole);
 
         userRepository.save(user);
+
+        // Auto-create a minimal patient record so /api/patient/** endpoints work immediately
+        Patient patient = new Patient();
+        patient.setUser(user);
+        patient.setFullName(user.getUsername());
+        patientRepository.save(patient);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

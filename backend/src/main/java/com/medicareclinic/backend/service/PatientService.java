@@ -44,6 +44,27 @@ public class PatientService {
         return saved;
     }
 
+    /** Returns the patient record for the user, auto-creating a minimal record if none exists. */
+    @Transactional
+    public Patient getOrCreatePatientForUser(String username) {
+        return patientRepository.findByUser_Username(username).orElseGet(() -> {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + username));
+            Patient p = new Patient();
+            p.setUser(user);
+            p.setFullName(username);
+            Patient saved = patientRepository.save(p);
+            log.info("Auto-created patient record for user: {}", username);
+            return saved;
+        });
+    }
+
+    @Transactional(readOnly = true)
+    public Patient getPatientForUser(String username) {
+        return patientRepository.findByUser_Username(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient record not found for user: " + username));
+    }
+
     @Transactional(readOnly = true)
     public List<Patient> getAllPatients() {
         return patientRepository.findAll();
@@ -60,12 +81,6 @@ public class PatientService {
     }
 
     @Transactional(readOnly = true)
-    public Patient getPatientForUser(String username) {
-        return patientRepository.findByUser_Username(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient record not found for user: " + username));
-    }
-
-    @Transactional(readOnly = true)
     public Patient getById(Long id) {
         return patientRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found: " + id));
@@ -77,11 +92,30 @@ public class PatientService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found: " + id));
 
         patient.setFullName(request.fullName());
-        patient.setContactInfo(request.contactInfo());
+        patient.setPhone(request.phone());
         patient.setEmail(request.email());
+        patient.setCnp(request.cnp());
+        patient.setGender(request.gender());
+        patient.setAddress(request.address());
 
         Patient saved = patientRepository.save(patient);
         log.info("Updated patient id={}", id);
+        return toResponse(saved);
+    }
+
+    @Transactional
+    public PatientResponse updatePatientForUser(String username, UpdatePatientRequest request) {
+        Patient patient = getOrCreatePatientForUser(username);
+
+        patient.setFullName(request.fullName());
+        patient.setPhone(request.phone());
+        patient.setEmail(request.email());
+        patient.setCnp(request.cnp());
+        patient.setGender(request.gender());
+        patient.setAddress(request.address());
+
+        Patient saved = patientRepository.save(patient);
+        log.info("Self-updated patient record for user: {}", username);
         return toResponse(saved);
     }
 
@@ -95,6 +129,15 @@ public class PatientService {
 
     public PatientResponse toResponse(Patient p) {
         String username = p.getUser() != null ? p.getUser().getUsername() : null;
-        return new PatientResponse(p.getId(), p.getFullName(), p.getContactInfo(), p.getEmail(), username);
+        return new PatientResponse(
+                p.getId(),
+                p.getFullName(),
+                p.getPhone() != null ? p.getPhone() : p.getContactInfo(),
+                p.getEmail(),
+                username,
+                p.getCnp(),
+                p.getGender(),
+                p.getAddress()
+        );
     }
 }

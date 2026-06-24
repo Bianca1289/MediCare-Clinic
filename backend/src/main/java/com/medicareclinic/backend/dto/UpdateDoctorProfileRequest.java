@@ -2,8 +2,6 @@ package com.medicareclinic.backend.dto;
 
 import jakarta.validation.constraints.Size;
 
-import java.util.Set;
-
 public record UpdateDoctorProfileRequest(
         @Size(max = 50)
         String licenseNumber,
@@ -14,5 +12,8 @@ public record UpdateDoctorProfileRequest(
         @Size(max = 20)
         String phoneNumber,
 
-        Set<Long> specialtyIds
+        @Size(max = 100)
+        String location,
+
+        Long specialtyId
 ) {}

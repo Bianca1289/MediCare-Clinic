@@ -5,10 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "doctor_profiles")
@@ -35,12 +34,16 @@ public class DoctorProfile {
     @Column(length = 20)
     private String phoneNumber;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "doctor_specialties",
-        joinColumns = @JoinColumn(name = "doctor_id"),
-        inverseJoinColumns = @JoinColumn(name = "specialty_id")
-    )
-    @ToString.Exclude
-    private Set<Specialty> specialties = new HashSet<>();
+    @Column(length = 100)
+    private String location;
+
+    @Column
+    private Double averageRating;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "specialty_id")
+    private Specialty specialty;
+
+    @OneToMany(mappedBy = "doctorProfile", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<DoctorAvailability> availability = new ArrayList<>();
 }

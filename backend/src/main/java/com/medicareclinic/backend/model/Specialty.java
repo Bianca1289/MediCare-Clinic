@@ -28,7 +28,7 @@ public class Specialty {
     @Column(length = 500)
     private String description;
 
-    @ManyToMany(mappedBy = "specialties")
+    @OneToMany(mappedBy = "specialty")
     @ToString.Exclude
     private Set<DoctorProfile> doctors = new HashSet<>();
 

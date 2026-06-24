@@ -1,6 +1,6 @@
 package com.medicareclinic.backend.dto;
 
-import java.util.Set;
+import java.util.List;
 
 public record DoctorProfileResponse(
         Long id,
@@ -8,5 +8,8 @@ public record DoctorProfileResponse(
         String licenseNumber,
         String bio,
         String phoneNumber,
-        Set<String> specialties
+        String location,
+        Double averageRating,
+        String specialty,
+        List<DoctorAvailabilityResponse> availability
 ) {}

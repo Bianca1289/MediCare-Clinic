@@ -1,5 +1,6 @@
 package com.medicareclinic.backend.service;
 
+import com.medicareclinic.backend.dto.DoctorAvailabilityResponse;
 import com.medicareclinic.backend.dto.DoctorProfileRequest;
 import com.medicareclinic.backend.dto.DoctorProfileResponse;
 import com.medicareclinic.backend.dto.UpdateDoctorProfileRequest;
@@ -18,8 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,7 +50,8 @@ public class DoctorProfileService {
         profile.setLicenseNumber(request.licenseNumber());
         profile.setBio(request.bio());
         profile.setPhoneNumber(request.phoneNumber());
-        profile.setSpecialties(resolveSpecialties(request.specialtyIds()));
+        profile.setLocation(request.location());
+        profile.setSpecialty(resolveSpecialty(request.specialtyId()));
 
         DoctorProfile saved = doctorProfileRepository.save(profile);
         log.info("Created doctor profile for user: {}", request.username());
@@ -85,7 +88,8 @@ public class DoctorProfileService {
         }
         if (request.bio() != null) profile.setBio(request.bio());
         if (request.phoneNumber() != null) profile.setPhoneNumber(request.phoneNumber());
-        if (request.specialtyIds() != null) profile.setSpecialties(resolveSpecialties(request.specialtyIds()));
+        if (request.location() != null) profile.setLocation(request.location());
+        if (request.specialtyId() != null) profile.setSpecialty(resolveSpecialty(request.specialtyId()));
 
         log.info("Updated doctor profile id={}", id);
         return toResponse(doctorProfileRepository.save(profile));
@@ -103,25 +107,36 @@ public class DoctorProfileService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Doctor profile not found: " + id));
     }
 
-    private Set<Specialty> resolveSpecialties(Set<Long> ids) {
-        if (ids == null || ids.isEmpty()) return new HashSet<>();
-        return ids.stream()
-                .map(sid -> specialtyRepository.findById(sid)
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Specialty not found: " + sid)))
-                .collect(Collectors.toSet());
+    private Specialty resolveSpecialty(Long id) {
+        if (id == null) return null;
+        return specialtyRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Specialty not found: " + id));
     }
 
+    private static final Map<String, Integer> DAY_ORDER = Map.of(
+            "MONDAY", 1, "TUESDAY", 2, "WEDNESDAY", 3, "THURSDAY", 4,
+            "FRIDAY", 5, "SATURDAY", 6, "SUNDAY", 7
+    );
+
     public DoctorProfileResponse toResponse(DoctorProfile p) {
-        Set<String> specialtyNames = p.getSpecialties().stream()
-                .map(Specialty::getName)
-                .collect(Collectors.toSet());
+        List<DoctorAvailabilityResponse> availability = p.getAvailability().stream()
+                .map(a -> new DoctorAvailabilityResponse(
+                        a.getDayOfWeek(),
+                        a.getStartTime().toString(),
+                        a.getEndTime().toString()))
+                .sorted(Comparator.comparingInt(r -> DAY_ORDER.getOrDefault(r.dayOfWeek(), 99)))
+                .collect(Collectors.toList());
+
         return new DoctorProfileResponse(
                 p.getId(),
                 p.getUser().getUsername(),
                 p.getLicenseNumber(),
                 p.getBio(),
                 p.getPhoneNumber(),
-                specialtyNames
+                p.getLocation(),
+                p.getAverageRating(),
+                p.getSpecialty() != null ? p.getSpecialty().getName() : null,
+                availability
         );
     }
 }

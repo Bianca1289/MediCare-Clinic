@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
@@ -6,7 +6,11 @@ import RegisterPage from './pages/RegisterPage';
 import UserDashboard from './pages/UserDashboard';
 import ProfilePage from './pages/ProfilePage';
 import AdminDashboard from './pages/AdminDashboard';
+import DoctorsPage from './pages/DoctorsPage';
+import DoctorDetailPage from './pages/DoctorDetailPage';
+import PrescriptionsPage from './pages/PrescriptionsPage';
 import Unauthorized from './pages/Unauthorized';
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -32,10 +36,34 @@ export default function App() {
             }
           />
           <Route
+            path="/doctors"
+            element={
+              <PrivateRoute>
+                <DoctorsPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/doctors/:username"
+            element={
+              <PrivateRoute>
+                <DoctorDetailPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/admin/dashboard"
             element={
               <PrivateRoute requiredRole="ROLE_ADMIN">
                 <AdminDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/prescriptions"
+            element={
+              <PrivateRoute>
+                <PrescriptionsPage />
               </PrivateRoute>
             }
           />

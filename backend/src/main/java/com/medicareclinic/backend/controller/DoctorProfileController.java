@@ -35,6 +35,12 @@ public class DoctorProfileController {
         return ResponseEntity.ok(doctorProfileService.getById(id));
     }
 
+    @GetMapping("/username/{username}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<DoctorProfileResponse> getByUsername(@PathVariable String username) {
+        return ResponseEntity.ok(doctorProfileService.getByUsername(username));
+    }
+
     @GetMapping("/my")
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<DoctorProfileResponse> getMyProfile(Authentication authentication) {

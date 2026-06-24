@@ -3,8 +3,10 @@ package com.medicareclinic.backend.dto;
 public record PatientResponse(
         Long id,
         String fullName,
-        String contactInfo,
+        String phone,
         String email,
-        String username
+        String username,
+        String cnp,
+        String gender,
+        String address
 ) {}
-

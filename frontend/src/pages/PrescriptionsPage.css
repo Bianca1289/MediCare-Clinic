@@ -1,0 +1,188 @@
+/* ── Section ─────────────────────────────────────────────────────────────── */
+.rx-section {
+  margin-bottom: 2rem;
+}
+
+.rx-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.rx-section-title--muted {
+  color: #94a3b8;
+}
+
+.rx-count {
+  margin-left: 0.25rem;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+}
+
+.rx-count--muted {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+/* ── Grid ────────────────────────────────────────────────────────────────── */
+.rx-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.rx-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.rx-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  border-color: #bfdbfe;
+}
+
+.rx-card--expired {
+  opacity: 0.72;
+  background: #f8fafc;
+}
+
+.rx-card--expired:hover {
+  border-color: #e2e8f0;
+  box-shadow: none;
+}
+
+/* ── Card Header ─────────────────────────────────────────────────────────── */
+.rx-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rx-icon-wrap {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rx-card--expired .rx-icon-wrap {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.rx-card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.rx-medication {
+  font-size: 0.975rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 0.45rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rx-card--expired .rx-medication {
+  color: #64748b;
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.rx-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+.rx-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+}
+
+.rx-badge--blue   { background: #dbeafe; color: #1d4ed8; }
+.rx-badge--purple { background: #ede9fe; color: #6d28d9; }
+.rx-badge--green  { background: #dcfce7; color: #15803d; }
+
+/* ── Meta ────────────────────────────────────────────────────────────────── */
+.rx-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.rx-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.rx-meta-item--expired {
+  color: #ef4444;
+}
+
+.rx-meta-sep {
+  color: #cbd5e1;
+}
+
+/* ── Chevron ─────────────────────────────────────────────────────────────── */
+.rx-chevron {
+  flex-shrink: 0;
+  margin-top: 0.3rem;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+.rx-chevron--open {
+  transform: rotate(90deg);
+}
+
+/* ── Instructions ────────────────────────────────────────────────────────── */
+.rx-instructions {
+  padding: 0.85rem 1.25rem 1.1rem;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.rx-instructions-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin: 0 0 0.4rem;
+}
+
+.rx-instructions-text {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}

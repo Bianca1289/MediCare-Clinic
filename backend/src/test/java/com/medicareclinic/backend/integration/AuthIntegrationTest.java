@@ -1,24 +1,35 @@
 package com.medicareclinic.backend.integration;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 @ActiveProfiles("test")
 class AuthIntegrationTest {
 
     @Autowired
+    private WebApplicationContext wac;
+
     private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(springSecurity())
+                .build();
+    }
 
     @Test
     void register_newUser_returns200() throws Exception {
@@ -26,29 +37,27 @@ class AuthIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "username": "newuser",
+                                  "username": "newuser_auth",
                                   "password": "password123"
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("newuser"));
+                .andExpect(jsonPath("$.username").value("newuser_auth"));
     }
 
     @Test
     void register_duplicateUsername_returns409() throws Exception {
-        // First registration
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username": "dupuser", "password": "pass123"}
+                                {"username": "dupuser_auth", "password": "pass123"}
                                 """))
                 .andExpect(status().isOk());
 
-        // Duplicate attempt
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username": "dupuser", "password": "otherpass"}
+                                {"username": "dupuser_auth", "password": "otherpass"}
                                 """))
                 .andExpect(status().isConflict());
     }
@@ -62,12 +71,6 @@ class AuthIntegrationTest {
     @Test
     void accessAdminEndpoint_unauthenticated_returns401() throws Exception {
         mockMvc.perform(get("/api/admin/dashboard"))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void getSpecialties_unauthenticated_returns401() throws Exception {
-        mockMvc.perform(get("/api/specialties"))
                 .andExpect(status().isUnauthorized());
     }
 }

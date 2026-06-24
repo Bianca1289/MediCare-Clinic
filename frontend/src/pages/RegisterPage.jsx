@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { User, Lock, AlertTriangle } from 'lucide-react';
 import { register as apiRegister, login as apiLogin } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 import './LoginPage.css';
@@ -25,18 +26,17 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // 1. Create the account
       await apiRegister(username, password);
-
-      // 2. Auto-login with the new credentials
       const loginRes = await apiLogin(username, password);
       login(loginRes.data);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       const msg = err.response?.data?.error;
-      setError(msg === 'Username already taken'
-        ? 'That username is already taken. Please choose another.'
-        : 'Registration failed. Please try again.');
+      setError(
+        msg === 'Username already taken'
+          ? 'That username is already taken. Please choose another.'
+          : 'Registration failed. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -46,7 +46,15 @@ export default function RegisterPage() {
     <div className="login-bg">
       <div className="login-card">
         <div className="login-header">
-          <div className="login-logo">&#x2764;</div>
+          <div className="login-logo">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect width="40" height="40" rx="12" fill="rgba(255,255,255,0.15)" />
+              <path
+                d="M25 16h-4v-4a1 1 0 00-2 0v4h-4a1 1 0 000 2h4v4a1 1 0 002 0v-4h4a1 1 0 000-2z"
+                fill="white"
+              />
+            </svg>
+          </div>
           <h1 className="login-title">MediCare Clinic</h1>
           <p className="login-subtitle">Create your account</p>
         </div>
@@ -54,14 +62,15 @@ export default function RegisterPage() {
         <form className="login-form" onSubmit={handleSubmit} noValidate>
           {error && (
             <div className="alert alert-error" role="alert">
-              <span className="alert-icon">&#x26A0;</span> {error}
+              <AlertTriangle size={16} />
+              <span>{error}</span>
             </div>
           )}
 
           <div className="form-group">
             <label htmlFor="username">Username</label>
             <div className="input-wrapper">
-              <span className="input-icon">&#x1F464;</span>
+              <User size={16} className="input-icon" />
               <input
                 id="username"
                 type="text"
@@ -79,7 +88,7 @@ export default function RegisterPage() {
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <div className="input-wrapper">
-              <span className="input-icon">&#x1F512;</span>
+              <Lock size={16} className="input-icon" />
               <input
                 id="password"
                 type="password"
@@ -96,7 +105,7 @@ export default function RegisterPage() {
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
             <div className="input-wrapper">
-              <span className="input-icon">&#x1F512;</span>
+              <Lock size={16} className="input-icon" />
               <input
                 id="confirmPassword"
                 type="password"

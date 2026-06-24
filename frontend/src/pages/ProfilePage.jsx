@@ -1,191 +1,304 @@
-﻿import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  User,
+  CalendarDays,
+  FileText,
+  Activity,
+  ShieldCheck,
+  Save,
+  CircleAlert,
+  CircleCheck,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getMyProfile, updateMyProfile } from '../api/profile';
+import Sidebar from '../components/Sidebar';
+import { getMyPatientProfile, updateMyPatientProfile } from '../api/patient';
 import './Dashboard.css';
 import './ProfilePage.css';
+
+const NAV_ITEMS = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/profile', icon: User, label: 'Profile' },
+  { to: '/doctors', icon: Activity, label: 'Doctors' },
+  { to: '/appointments', icon: CalendarDays, label: 'Appointments', disabled: true },
+  { to: '/prescriptions', icon: FileText, label: 'Prescriptions' },
+];
+
+const GENDER_OPTIONS = ['', 'Male', 'Female', 'Other', 'Prefer not to say'];
+
+const EMPTY_FORM = {
+  fullName: '',
+  phone: '',
+  email: '',
+  cnp: '',
+  gender: '',
+  address: '',
+};
+
 export default function ProfilePage() {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
+
   const [profile, setProfile] = useState(null);
-  const [form, setForm] = useState({ username: '' });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
   useEffect(() => {
-    let isMounted = true;
-    async function loadProfile() {
-      try {
-        const res = await getMyProfile();
-        if (!isMounted) return;
-        setProfile(res.data);
-        setForm({ username: res.data.username ?? '' });
-      } catch {
-        if (!isMounted) return;
+    let active = true;
+    getMyPatientProfile()
+      .then((res) => {
+        if (!active) return;
+        const d = res.data;
+        setProfile(d);
+        setForm({
+          fullName: d.fullName ?? '',
+          phone: d.phone ?? '',
+          email: d.email ?? '',
+          cnp: d.cnp ?? '',
+          gender: d.gender ?? '',
+          address: d.address ?? '',
+        });
+      })
+      .catch(() => {
+        if (!active) return;
         setError('Unable to load your profile. Please try again.');
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-    loadProfile();
-    return () => {
-      isMounted = false;
-    };
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, []);
+
+  function field(name) {
+    return (e) => setForm((f) => ({ ...f, [name]: e.target.value }));
+  }
+
   async function handleLogout() {
     await logout();
     navigate('/login', { replace: true });
   }
-  async function handleSubmit(event) {
-    event.preventDefault();
+
+  async function handleSubmit(e) {
+    e.preventDefault();
     setError('');
     setSuccess('');
     setSaving(true);
     try {
-      const res = await updateMyProfile(form.username.trim());
-      setProfile(res.data);
-      setForm({ username: res.data.username ?? '' });
-      setSuccess('Profile updated successfully.');
-      await refreshUser();
+      const res = await updateMyPatientProfile({
+        fullName: form.fullName.trim() || user.username,
+        phone: form.phone.trim() || null,
+        email: form.email.trim() || null,
+        cnp: form.cnp.trim() || null,
+        gender: form.gender || null,
+        address: form.address.trim() || null,
+      });
+      const d = res.data;
+      setProfile(d);
+      setForm({
+        fullName: d.fullName ?? '',
+        phone: d.phone ?? '',
+        email: d.email ?? '',
+        cnp: d.cnp ?? '',
+        gender: d.gender ?? '',
+        address: d.address ?? '',
+      });
+      setSuccess('Profile saved successfully.');
     } catch (err) {
-      const message = err?.response?.data?.message || err?.response?.data?.error || 'Could not update profile.';
-      setError(message);
+      const msg = err?.response?.data?.message || err?.response?.data?.error || 'Could not save profile.';
+      setError(msg);
     } finally {
       setSaving(false);
     }
   }
-  const roles = profile?.roles ?? user?.roles ?? [];
+
+  const roles = user?.roles ?? [];
+  const isAdmin = roles.includes('ROLE_ADMIN');
+
   return (
     <div className="layout">
-      <aside className="sidebar">
-        <div className="sidebar-brand">
-          <span className="brand-icon">&#x2764;</span>
-          <span>MediCare</span>
-        </div>
-        <nav className="sidebar-nav">
-          <Link className="nav-item" to="/dashboard">
-            <span className="nav-icon">&#x1F3E0;</span> Dashboard
-          </Link>
-          <Link className="nav-item active" to="/profile">
-            <span className="nav-icon">&#x1F464;</span> Profile
-          </Link>
-          <a className="nav-item" href="#">
-            <span className="nav-icon">&#x1F4C5;</span> Appointments
-          </a>
-          <a className="nav-item" href="#">
-            <span className="nav-icon">&#x1F4CB;</span> Prescriptions
-          </a>
-        </nav>
-        <button className="btn-logout" onClick={handleLogout}>
-          &#x2190; Logout
-        </button>
-      </aside>
+      <Sidebar navItems={NAV_ITEMS} onLogout={handleLogout} />
+
       <main className="main">
         <header className="page-header">
           <div>
             <h1 className="page-title">My Profile</h1>
-            <p className="page-sub">View and update your account details</p>
+            <p className="page-sub">Manage your personal information and account details</p>
           </div>
-          <div className="user-badge user-badge--blue">
-            &#x1F464; {user?.username}
+          <div className={`user-badge ${isAdmin ? 'user-badge--red' : 'user-badge--blue'}`}>
+            {user?.username}
           </div>
         </header>
+
         {loading ? (
-          <div className="info-card">
-            <p className="loading-text">Loading profile...</p>
+          <div className="info-card" style={{ textAlign: 'center', padding: '3rem' }}>
+            <div className="profile-spinner" />
           </div>
         ) : (
-          <>
-            <div className="stats-grid profile-stats-grid">
-              <div className="stat-card stat-card--blue">
-                <div className="stat-info">
-                  <p className="stat-label">Username</p>
-                  <p className="stat-value stat-value--compact">{profile?.username}</p>
-                </div>
-                <span className="stat-icon">&#x270D;</span>
-              </div>
-              <div className="stat-card stat-card--green">
-                <div className="stat-info">
-                  <p className="stat-label">Account Status</p>
-                  <p className="stat-value stat-value--compact">{profile?.enabled ? 'Active' : 'Disabled'}</p>
-                </div>
-                <span className="stat-icon">&#x2705;</span>
-              </div>
-              <div className="stat-card stat-card--purple">
-                <div className="stat-info">
-                  <p className="stat-label">Roles</p>
-                  <p className="stat-value stat-value--compact">{roles.length}</p>
-                </div>
-                <span className="stat-icon">&#x1F511;</span>
-              </div>
-            </div>
-            <div className="profile-grid">
-              <section className="info-card">
-                <p className="info-label">Account Details</p>
-                <div className="detail-list">
-                  <div className="detail-item">
-                    <span className="detail-label">User ID</span>
-                    <span className="detail-value">{profile?.id}</span>
+          <div className="profile-layout">
+
+            {/* Left column — account info */}
+            <aside className="profile-aside">
+              <div className="info-card profile-account-card">
+                <div className="profile-avatar-wrap">
+                  <div className="profile-avatar">
+                    {(user?.username ?? '?').slice(0, 2).toUpperCase()}
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Username</span>
-                    <span className="detail-value">{profile?.username}</span>
+                  <div>
+                    <p className="profile-avatar-name">{profile?.fullName || user?.username}</p>
+                    <p className="profile-avatar-sub">@{user?.username}</p>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Enabled</span>
-                    <span className="detail-value">{profile?.enabled ? 'Yes' : 'No'}</span>
+                </div>
+
+                <div className="profile-account-rows">
+                  <div className="profile-account-row">
+                    <span className="profile-account-label">Account ID</span>
+                    <span className="profile-account-value">#{profile?.id ?? '—'}</span>
                   </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Roles</span>
-                    <span className="detail-value role-badges role-badges--right">
-                      {roles.map((role) => (
+                  <div className="profile-account-row">
+                    <span className="profile-account-label">Status</span>
+                    <span className="status-badge status-badge--green">Active</span>
+                  </div>
+                  <div className="profile-account-row">
+                    <span className="profile-account-label">Roles</span>
+                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                      {roles.map((r) => (
                         <span
-                          key={role}
-                          className={`role-badge role-badge--small ${role === 'ROLE_ADMIN' ? 'role-badge--red' : 'role-badge--green'}`}
+                          key={r}
+                          className={`role-badge role-badge--small ${r === 'ROLE_ADMIN' ? 'role-badge--red' : 'role-badge--green'}`}
                         >
-                          {role === 'ROLE_ADMIN' ? 'ADMIN' : 'USER'}
+                          {r.replace('ROLE_', '')}
                         </span>
                       ))}
-                    </span>
+                    </div>
                   </div>
                 </div>
-              </section>
-              <section className="info-card">
-                <p className="info-label">Update Username</p>
-                <form className="profile-form" onSubmit={handleSubmit}>
-                  <div className="form-group">
-                    <label className="form-label" htmlFor="username">
-                      Username
-                    </label>
+
+                <div className="profile-security-note">
+                  <ShieldCheck size={14} />
+                  <span>Your session is secure</span>
+                </div>
+              </div>
+            </aside>
+
+            {/* Right column — editable form */}
+            <section className="profile-form-section">
+              <div className="info-card">
+                <p className="info-label">Personal Information</p>
+
+                {error && (
+                  <div className="profile-alert profile-alert--error">
+                    <CircleAlert size={15} />
+                    <span>{error}</span>
+                  </div>
+                )}
+                {success && (
+                  <div className="profile-alert profile-alert--success">
+                    <CircleCheck size={15} />
+                    <span>{success}</span>
+                  </div>
+                )}
+
+                <form className="profile-edit-form" onSubmit={handleSubmit}>
+                  <div className="pf-row">
+                    <div className="pf-group">
+                      <label className="pf-label" htmlFor="fullName">Full Name</label>
+                      <input
+                        id="fullName"
+                        className="pf-input"
+                        type="text"
+                        value={form.fullName}
+                        onChange={field('fullName')}
+                        placeholder="e.g. Maria Ionescu"
+                        maxLength={100}
+                      />
+                    </div>
+                    <div className="pf-group">
+                      <label className="pf-label" htmlFor="cnp">CNP</label>
+                      <input
+                        id="cnp"
+                        className="pf-input"
+                        type="text"
+                        value={form.cnp}
+                        onChange={field('cnp')}
+                        placeholder="13-digit personal code"
+                        maxLength={13}
+                        pattern="[0-9]{13}"
+                        title="CNP must be 13 digits"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pf-row">
+                    <div className="pf-group">
+                      <label className="pf-label" htmlFor="gender">Gender</label>
+                      <select
+                        id="gender"
+                        className="pf-input pf-select"
+                        value={form.gender}
+                        onChange={field('gender')}
+                      >
+                        {GENDER_OPTIONS.map((g) => (
+                          <option key={g} value={g}>{g || 'Select…'}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="pf-group">
+                      <label className="pf-label" htmlFor="phone">Phone Number</label>
+                      <input
+                        id="phone"
+                        className="pf-input"
+                        type="tel"
+                        value={form.phone}
+                        onChange={field('phone')}
+                        placeholder="+40 7XX XXX XXX"
+                        maxLength={20}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pf-group">
+                    <label className="pf-label" htmlFor="email">Email Address</label>
                     <input
-                      id="username"
-                      className="form-input"
-                      type="text"
-                      value={form.username}
-                      onChange={(e) => setForm({ username: e.target.value })}
-                      minLength={3}
-                      maxLength={50}
-                      required
+                      id="email"
+                      className="pf-input"
+                      type="email"
+                      value={form.email}
+                      onChange={field('email')}
+                      placeholder="your@email.com"
                     />
                   </div>
-                  {error ? <div className="alert alert--error">{error}</div> : null}
-                  {success ? <div className="alert alert--success">{success}</div> : null}
-                  <div className="form-actions">
-                    <button className="btn-primary" type="submit" disabled={saving}>
-                      {saving ? 'Saving...' : 'Save changes'}
-                    </button>
-                    <Link className="btn-secondary" to="/dashboard">
-                      Back to dashboard
-                    </Link>
+
+                  <div className="pf-group">
+                    <label className="pf-label" htmlFor="address">Home Address</label>
+                    <input
+                      id="address"
+                      className="pf-input"
+                      type="text"
+                      value={form.address}
+                      onChange={field('address')}
+                      placeholder="Street, City, County"
+                      maxLength={255}
+                    />
                   </div>
-                  <p className="help-text">
-                    This changes the username used to sign in. Your session will refresh automatically after saving.
-                  </p>
+
+                  <div className="pf-actions">
+                    <button className="pf-btn-save" type="submit" disabled={saving}>
+                      {saving ? (
+                        <span className="btn-spinner" />
+                      ) : (
+                        <>
+                          <Save size={15} />
+                          Save changes
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </form>
-              </section>
-            </div>
-          </>
+              </div>
+            </section>
+          </div>
         )}
       </main>
     </div>

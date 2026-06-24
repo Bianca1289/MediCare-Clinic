@@ -1,54 +1,42 @@
 package com.medicareclinic.backend.integration;
 
 import com.medicareclinic.backend.model.Patient;
-import com.medicareclinic.backend.model.Role;
-import com.medicareclinic.backend.model.User;
 import com.medicareclinic.backend.repository.PatientRepository;
-import com.medicareclinic.backend.repository.RoleRepository;
-import com.medicareclinic.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.util.Set;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class PatientIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebApplicationContext wac;
 
     @Autowired
     private PatientRepository patientRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        patientRepository.deleteAll();
-        // DataInitializer will re-populate via CommandLineRunner
+        mockMvc = MockMvcBuilders.webAppContextSetup(wac)
+                .apply(springSecurity())
+                .build();
     }
 
     @Test
@@ -85,7 +73,6 @@ class PatientIntegrationTest {
     @Test
     @WithMockUser(username = "reception1", roles = {"RECEPTIONIST"})
     void listPatients_returnsPaginatedResults() throws Exception {
-        // Create a patient first
         mockMvc.perform(post("/api/receptionist/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -103,16 +90,13 @@ class PatientIntegrationTest {
     @Test
     @WithMockUser(username = "reception1", roles = {"RECEPTIONIST"})
     void updatePatient_existingId_returns200() throws Exception {
-        // Create patient
-        String createResponse = mockMvc.perform(post("/api/receptionist/patients")
+        mockMvc.perform(post("/api/receptionist/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"fullName": "Original Name", "email": "orig@example.com"}
                                 """))
-                .andExpect(status().isCreated())
-                .andReturn().getResponse().getContentAsString();
+                .andExpect(status().isCreated());
 
-        // Extract id from response (simple string search)
         Long id = patientRepository.findAll().stream()
                 .filter(p -> "Original Name".equals(p.getFullName()))
                 .findFirst()
@@ -135,7 +119,6 @@ class PatientIntegrationTest {
     @Test
     @WithMockUser(username = "reception1", roles = {"RECEPTIONIST"})
     void deletePatient_existingId_returns204() throws Exception {
-        // Create patient
         mockMvc.perform(post("/api/receptionist/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

@@ -25,10 +25,19 @@ public class Patient {
     @Column
     private String email;
 
+    @Column(length = 20)
+    private String phone;
+
+    @Column(length = 13)
+    private String cnp;
+
+    @Column(length = 10)
+    private String gender;
+
+    @Column(length = 255)
+    private String address;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 }
-
-
-

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { User, Lock, AlertTriangle } from 'lucide-react';
 import { login as apiLogin } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
 import './LoginPage.css';
@@ -21,8 +22,7 @@ export default function LoginPage() {
 
     try {
       const res = await apiLogin(username, password, rememberMe);
-      login(res.data); // store user in context
-
+      login(res.data);
       const isAdmin = res.data.roles.includes('ROLE_ADMIN');
       navigate(isAdmin ? '/admin/dashboard' : '/dashboard', { replace: true });
     } catch {
@@ -36,7 +36,15 @@ export default function LoginPage() {
     <div className="login-bg">
       <div className="login-card">
         <div className="login-header">
-          <div className="login-logo">&#x2764;</div>
+          <div className="login-logo">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect width="40" height="40" rx="12" fill="rgba(255,255,255,0.15)" />
+              <path
+                d="M25 16h-4v-4a1 1 0 00-2 0v4h-4a1 1 0 000 2h4v4a1 1 0 002 0v-4h4a1 1 0 000-2z"
+                fill="white"
+              />
+            </svg>
+          </div>
           <h1 className="login-title">MediCare Clinic</h1>
           <p className="login-subtitle">Sign in to your account</p>
         </div>
@@ -44,14 +52,15 @@ export default function LoginPage() {
         <form className="login-form" onSubmit={handleSubmit} noValidate>
           {error && (
             <div className="alert alert-error" role="alert">
-              <span className="alert-icon">&#x26A0;</span> {error}
+              <AlertTriangle size={16} />
+              <span>{error}</span>
             </div>
           )}
 
           <div className="form-group">
             <label htmlFor="username">Username</label>
             <div className="input-wrapper">
-              <span className="input-icon">&#x1F464;</span>
+              <User size={16} className="input-icon" />
               <input
                 id="username"
                 type="text"
@@ -68,7 +77,7 @@ export default function LoginPage() {
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <div className="input-wrapper">
-              <span className="input-icon">&#x1F512;</span>
+              <Lock size={16} className="input-icon" />
               <input
                 id="password"
                 type="password"

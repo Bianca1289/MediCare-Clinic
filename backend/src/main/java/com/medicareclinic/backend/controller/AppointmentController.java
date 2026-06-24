@@ -3,6 +3,7 @@ package com.medicareclinic.backend.controller;
 import com.medicareclinic.backend.dto.AppointmentResponse;
 import com.medicareclinic.backend.dto.BookAppointmentRequest;
 import com.medicareclinic.backend.dto.CreateAppointmentRequest;
+import com.medicareclinic.backend.dto.RescheduleRequest;
 import com.medicareclinic.backend.dto.UpdateAppointmentRequest;
 import com.medicareclinic.backend.model.Patient;
 import com.medicareclinic.backend.service.AppointmentService;
@@ -100,5 +101,22 @@ public class AppointmentController {
         CreateAppointmentRequest appointmentRequest = new CreateAppointmentRequest(
                 patient.getId(), request.doctorUsername(), request.startTime(), request.notes());
         return ResponseEntity.status(HttpStatus.CREATED).body(appointmentService.createAppointment(appointmentRequest));
+    }
+
+    @PatchMapping("/api/patient/appointments/{id}/cancel")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<AppointmentResponse> cancelAppointment(
+            @PathVariable Long id,
+            Authentication authentication) {
+        return ResponseEntity.ok(appointmentService.cancelForPatient(id, authentication.getName()));
+    }
+
+    @PatchMapping("/api/patient/appointments/{id}/reschedule")
+    @PreAuthorize("hasRole('PATIENT')")
+    public ResponseEntity<AppointmentResponse> rescheduleAppointment(
+            @PathVariable Long id,
+            @Valid @RequestBody RescheduleRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(appointmentService.rescheduleForPatient(id, request.startTime(), authentication.getName()));
     }
 }

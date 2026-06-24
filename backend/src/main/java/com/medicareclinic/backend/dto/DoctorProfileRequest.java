@@ -3,8 +3,6 @@ package com.medicareclinic.backend.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-import java.util.Set;
-
 public record DoctorProfileRequest(
         @NotBlank(message = "Username of the doctor user is required")
         String username,
@@ -19,5 +17,8 @@ public record DoctorProfileRequest(
         @Size(max = 20)
         String phoneNumber,
 
-        Set<Long> specialtyIds
+        @Size(max = 100)
+        String location,
+
+        Long specialtyId
 ) {}

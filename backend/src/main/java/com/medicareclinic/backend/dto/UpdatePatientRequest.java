@@ -9,9 +9,18 @@ public record UpdatePatientRequest(
         @Size(max = 100)
         String fullName,
 
-        @Size(max = 100)
-        String contactInfo,
+        @Size(max = 20)
+        String phone,
 
         @Email(message = "Valid email is required")
-        String email
+        String email,
+
+        @Size(max = 13)
+        String cnp,
+
+        @Size(max = 10)
+        String gender,
+
+        @Size(max = 255)
+        String address
 ) {}

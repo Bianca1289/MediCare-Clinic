@@ -125,11 +125,51 @@ public class AppointmentService {
         log.info("Deleted appointment id={}", id);
     }
 
+    @Transactional
+    public AppointmentResponse cancelForPatient(Long id, String patientUsername) {
+        Appointment appointment = findOrThrow(id);
+        verifyOwnership(appointment, patientUsername);
+        if (!"SCHEDULED".equals(appointment.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only SCHEDULED appointments can be cancelled");
+        }
+        appointment.setStatus("CANCELLED");
+        return toResponse(appointmentRepository.save(appointment));
+    }
+
+    @Transactional
+    public AppointmentResponse rescheduleForPatient(Long id, String newStartTime, String patientUsername) {
+        Appointment appointment = findOrThrow(id);
+        verifyOwnership(appointment, patientUsername);
+        if (!"SCHEDULED".equals(appointment.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only SCHEDULED appointments can be rescheduled");
+        }
+        LocalDateTime start;
+        try {
+            start = LocalDateTime.parse(newStartTime);
+        } catch (DateTimeParseException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid startTime format, expected ISO-8601");
+        }
+        checkForConflicts(appointment.getDoctor().getId(), start, appointment.getId());
+        appointment.setStartTime(start);
+        return toResponse(appointmentRepository.save(appointment));
+    }
+
+    private void verifyOwnership(Appointment appointment, String patientUsername) {
+        if (!appointment.getPatient().getUser().getUsername().equals(patientUsername)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your appointment");
+        }
+    }
+
     private void checkForConflicts(Long doctorId, LocalDateTime appointmentStart) {
+        checkForConflicts(doctorId, appointmentStart, null);
+    }
+
+    private void checkForConflicts(Long doctorId, LocalDateTime appointmentStart, Long excludeId) {
         LocalDateTime windowStart = appointmentStart.minusMinutes(30);
         LocalDateTime windowEnd = appointmentStart.plusMinutes(90);
 
         List<Appointment> conflicts = appointmentRepository.findByDoctor_Id(doctorId).stream()
+                .filter(a -> excludeId == null || !a.getId().equals(excludeId))
                 .filter(a -> "SCHEDULED".equals(a.getStatus()))
                 .filter(a -> !a.getStartTime().isAfter(windowEnd) && a.getStartTime().isBefore(windowStart.plusMinutes(30)))
                 .collect(Collectors.toList());
@@ -150,7 +190,7 @@ public class AppointmentService {
                 a.getPatient().getId(),
                 a.getPatient().getFullName(),
                 a.getDoctor().getUsername(),
-                a.getStartTime(),
+                a.getStartTime().toString(),
                 a.getStatus(),
                 a.getNotes()
         );

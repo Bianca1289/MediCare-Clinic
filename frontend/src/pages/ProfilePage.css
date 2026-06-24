@@ -1,30 +1,251 @@
-﻿.profile-grid {
+/* ── Profile two-column layout ── */
+.profile-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  grid-template-columns: 280px 1fr;
   gap: 1.25rem;
   align-items: start;
 }
-.profile-stats-grid {
-  margin-bottom: 1.25rem;
+
+/* ── Account sidebar card ── */
+.profile-aside {
+  position: sticky;
+  top: 1.5rem;
 }
-.stat-value--compact {
-  font-size: 1.2rem;
-}
-.profile-form {
+
+.profile-account-card {
   display: flex;
   flex-direction: column;
+  gap: 1.25rem;
+}
+
+.profile-avatar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.profile-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+.profile-avatar-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #0f172a;
+  margin: 0 0 0.2rem;
+}
+
+.profile-avatar-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.profile-account-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1rem;
+}
+
+.profile-account-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.profile-account-row:last-child {
+  border-bottom: none;
+}
+
+.profile-account-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.profile-account-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.profile-security-note {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 1rem;
+}
+
+.profile-security-note svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+/* ── Edit form ── */
+.profile-form-section {
+  min-width: 0;
+}
+
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-top: 1rem;
+}
+
+.pf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
-.form-group {
+
+.pf-group {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
-.form-label {
-  font-size: 0.875rem;
+
+.pf-label {
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #374151;
+  color: #475569;
+  letter-spacing: 0.01em;
 }
+
+.pf-input {
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.pf-input::placeholder {
+  color: #94a3b8;
+}
+
+.pf-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.pf-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  padding-right: 2.2rem;
+  cursor: pointer;
+}
+
+.pf-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.pf-btn-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.4rem;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+  font-family: inherit;
+  min-height: 2.5rem;
+}
+
+.pf-btn-save:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.pf-btn-save:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Inline spinner (reuse from LoginPage.css) */
+.btn-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: profile-spin 0.7s linear infinite;
+}
+
+@keyframes profile-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Alerts ── */
+.profile-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.profile-alert--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.profile-alert--success {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* Loading spinner */
+.profile-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: profile-spin 0.7s linear infinite;
+  margin: 0 auto;
+}
+
+/* ── Old compatibility classes still used by AdminDashboard ── */
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.form-label { font-size: 0.875rem; font-weight: 600; color: #374151; }
 .form-input {
   padding: 0.8rem 0.95rem;
   border: 1px solid #d1d5db;
@@ -32,91 +253,40 @@
   font-size: 1rem;
   color: #111827;
   background: #fff;
-}
-.form-input:focus {
   outline: none;
-  border-color: #1d6fc4;
-  box-shadow: 0 0 0 3px rgba(29, 111, 196, 0.12);
 }
-.form-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-}
-.btn-primary,
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.05rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  border: none;
-  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
-}
+.form-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+.form-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .btn-primary {
-  background: #1d6fc4;
-  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.75rem 1.05rem; border-radius: 10px; font-size: 0.95rem;
+  font-weight: 600; text-decoration: none; cursor: pointer; border: none;
+  background: #2563eb; color: #fff;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
-.btn-primary:hover,
-.btn-secondary:hover {
-  transform: translateY(-1px);
-}
-.btn-primary:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
-  transform: none;
-}
+.btn-primary:hover { transform: translateY(-1px); }
+.btn-primary:disabled { cursor: not-allowed; opacity: 0.7; transform: none; }
 .btn-secondary {
-  background: #e5e7eb;
-  color: #111827;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.75rem 1.05rem; border-radius: 10px; font-size: 0.95rem;
+  font-weight: 600; text-decoration: none; cursor: pointer; border: none;
+  background: #e5e7eb; color: #111827;
+  transition: transform 0.15s ease;
 }
-.alert {
-  padding: 0.8rem 1rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
-}
-.alert--success {
-  background: #dcfce7;
-  color: #166534;
-}
-.alert--error {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.detail-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 0;
-  border-bottom: 1px solid #e5e7eb;
-}
-.detail-item:last-child {
-  border-bottom: none;
-}
-.detail-label {
-  color: #6b7280;
-  font-size: 0.88rem;
-}
-.detail-value {
-  font-weight: 600;
-  color: #111827;
-  text-align: right;
-}
-.role-badges--right {
-  justify-content: flex-end;
-}
-@media (max-width: 900px) {
-  .profile-grid {
+.btn-secondary:hover { transform: translateY(-1px); }
+.alert { padding: 0.8rem 1rem; border-radius: 10px; font-size: 0.95rem; }
+.alert--success { background: #dcfce7; color: #166534; }
+.alert--error { background: #fee2e2; color: #991b1b; }
+.help-text { font-size: 0.8rem; color: #94a3b8; margin: 0; line-height: 1.5; }
+
+@media (max-width: 960px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  .profile-aside {
+    position: static;
+  }
+  .pf-row {
     grid-template-columns: 1fr;
   }
 }
